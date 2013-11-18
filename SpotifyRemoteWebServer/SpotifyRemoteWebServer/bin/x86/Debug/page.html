@@ -1,0 +1,78 @@
+<html>
+<head>
+<style type="text/css">
+body{margin:0;padding:0;color:#666;font-family:Tahoma,Geneva,sans-serif;font-size:13px;line-height:1.4em;background-color:#000;background-repeat:repeat-x repeat-y;background-position:top;background-image:url(images/default.jpg)}
+#podbar{top:0;position:fixed;z-index:150;_position:absolute;_top:expression(eval(document.documentElement.scrollTop+(document.documentElement.clientHeight-this.offsetHeight)));width:100%;background-repeat:repeat-x repeat-y;background-position:top;background-image:url(images/default.jpg)}
+#content{margin-top:80px;}
+a:link { color:green; }
+a:visited { color:green; }
+.centered
+{
+margin-top:5px;
+width: 98%;
+max-height:640px;
+max-width:640px;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Spotify Web</title>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+function Play() { qreq("/play"); }
+function Pause() { qreq("/pause"); }
+function Prev() { qreq("/prev"); }
+function Next() { qreq("/next"); }
+function VolUp() { qreq("/volup"); }
+function VolDown() { qreq("/voldwn"); }
+function Status() {
+var f = req("/status");
+}
+function req(scriptURL)
+{
+var result = null;
+$.ajax({
+url: scriptURL,
+type: 'get',
+dataType: 'html',
+async: false,
+success: function(data) {
+	result = data;
+}
+});
+return result;
+}
+function qreq(scriptURL)
+{
+$.get(scriptURL, function(data)
+{
+	return data;
+});
+}
+$(document).ready(function()
+{
+window.setInterval(function() {
+$.get("/status", function(data)
+{
+var str = data.split("\n");
+$("#spotimg").attr("src", str[8]);
+$("#songtitle").html(str[5]);
+var st = str[0];
+if(st.indexOf("1") !== -1)
+{
+$("#songtime").html(str[4]);
+}
+else { $("#songtime").html("Paused."); }
+})},1000);
+});
+</script>
+</head>
+<body>
+<center><img id="spotimg" class="centered" src="" /></center>
+<!-- Centered DIV Under Image -->
+<center><font color="white" size="2"><b id="songtitle">&nbsp;</b></font><br /><font color="white" size="2"><b id="songtime">&nbsp;</b></font></center>
+<center><input type="button" onclick="VolDown()" value="-" /><input type="button" onclick="Play()" value="Play" /><input type="button" onclick="VolUp()" value="+" /><br />
+<input type="button" onclick="Prev()" value="<=" />
+<input type="button" onclick="Next()" value="=>" /><br />
+<input type="button" onclick="Pause()" value="Pause" /></center>
+</body>
+</html>

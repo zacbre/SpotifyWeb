@@ -7,3 +7,8 @@ C:\Users\Zac\Documents\Visual Studio 2012\Projects\SpotifyRemoteWebServer\Spotif
 C:\Users\Zac\Documents\Visual Studio 2012\Projects\SpotifyRemoteWebServer\SpotifyRemoteWebServer\bin\x86\Debug\spotyapi.dll
 C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\obj\x86\Debug\SpotifyRemoteWebServer.exe
 C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\obj\x86\Debug\SpotifyRemoteWebServer.pdb
+C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\obj\x86\Debug\SpotifyRemoteWebServer.csprojResolveAssemblyReference.cache
+C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\bin\x86\Debug\SpotifyRemoteWebServer.exe.config
+C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\bin\x86\Debug\SpotifyRemoteWebServer.exe
+C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\bin\x86\Debug\SpotifyRemoteWebServer.pdb
+C:\Users\Zac\Documents\GitHub\SpotifyWeb\SpotifyRemoteWebServer\SpotifyRemoteWebServer\bin\x86\Debug\Newtonsoft.Json.dll

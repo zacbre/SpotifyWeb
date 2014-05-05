@@ -19,10 +19,12 @@ namespace Thr
         /// <param name="Host">Most of the time 127.0.0.1, or for lulz use something like my-awesome-program.spotilocal.com</param>
         public SpotifyAPI(string OAuth, string Host)
         {
+            Console.WriteLine("Creating new OAUTH with " + Host);
             _oauth = OAuth;
             _host = Host;
 
             //emulate the embed code [NEEDED]
+            wc.Proxy = null;
             wc.Headers.Add("Origin", "https://embed.spotify.com");
             wc.Headers.Add("Referer", "https://embed.spotify.com/?uri=spotify:track:5Zp4SWOpbuOdnsxLqwgutt");
         }
@@ -32,22 +34,29 @@ namespace Thr
         /// </summary>
         /// <param name="uri">The Spotify album URI</param>
         /// <returns></returns>
-        public string getArt(string uri)
+        public static string GetArt(string uri)
         {
             try
             {
-                string raw = new WebClient().DownloadString("http://open.spotify.com/album/" + uri.Split(new string[] { ":" }, StringSplitOptions.None)[2]);
+                WebClient xraw = new WebClient();
+                xraw.Proxy = null;
+                string raw = xraw.DownloadString("http://open.spotify.com/album/" + uri.Split(new string[] { ":" }, StringSplitOptions.None)[2]);
                 raw = raw.Replace(" ", "");
                 string[] lines = raw.Split(new string[] { "\n" }, StringSplitOptions.None);
                 foreach (string line in lines)
                 {
-                    if (line.Contains("<metaproperty=\"og:image\""))
+                    if (line.Contains("big-cover"))
                     {
-                        int content = line.IndexOf("content=\"");
-                        string url = line.Substring(content + 9);
-                        return url.Split('\"')[0].Replace("image", "640");
-                        //string[] l = line.Split(new string[] { "/" }, StringSplitOptions.None);
-                        //return "http://d3rt1990lpmkn.cloudfront.net/640/" + l[4].Substring(0, l[4].IndexOf("\"")).Replace("\"", "");
+                        //int content = line.IndexOf("content=\"");
+                        //string url = line.Substring(content + 9);
+                        //return url.Split('\"')[0];
+                        string vvs = line.Replace('\t', ' ');
+                        vvs = vvs.Replace(" ", "");
+                        int indx = vvs.IndexOf("src=\"") + "src=\"".Length;
+                        int indexx = vvs.IndexOf("\"border=\"0\"", indx);
+                        string vm = vvs.Substring(indx, indexx - indx);
+                        Console.WriteLine("Got art: " + vm);
+                        return vm.Replace("/300/", "/640/");
                     }
                 }
             }
@@ -84,6 +93,7 @@ namespace Thr
                 string a = recv("simplecsrf/token.json");
                 List<Responses.CFID> d = (List<Responses.CFID>)JsonConvert.DeserializeObject(a, typeof(List<Responses.CFID>));
                 _cfid = d[0].token;
+                //Console.WriteLine("Got CFID: " + d[0].token);
                 return d[0];
             }
         }
@@ -113,6 +123,7 @@ namespace Thr
         {
             get
             {
+                Console.WriteLine("Playing " + URI);
                 string a = recv("remote/play.json?uri=" + URI, true, true, -1);
                 List<Responses.Status> d = (List<Responses.Status>)JsonConvert.DeserializeObject(a, typeof(List<Responses.Status>));
                 return d[0];
@@ -128,6 +139,7 @@ namespace Thr
             {
                 try
                 {
+                    Console.WriteLine("Resuming " + URI);
                     string a = recv("remote/pause.json?pause=false", true, true, -1);
                     List<Responses.Status> d = (List<Responses.Status>)JsonConvert.DeserializeObject(a, typeof(List<Responses.Status>));
                     return d[0];
@@ -148,6 +160,7 @@ namespace Thr
             {
                 try
                 {
+                    Console.WriteLine("Pausing " + URI);
                     string a = recv("remote/pause.json?pause=true", true, true, -1);
                     List<Responses.Status> d = (List<Responses.Status>)JsonConvert.DeserializeObject(a, typeof(List<Responses.Status>));
                     return d[0];
@@ -171,6 +184,7 @@ namespace Thr
             {
                 string a = recv("remote/status.json", true, true, _wait);
                 List<Responses.Status> d = (List<Responses.Status>)JsonConvert.DeserializeObject(a, typeof(List<Responses.Status>));
+                //Console.WriteLine("Got Status: " + d[0]);
                 return d[0];
             }
         }
@@ -197,22 +211,30 @@ namespace Thr
         /// <returns></returns>
         public static string GetOAuth()
         {
-            string raw = new WebClient().DownloadString("https://embed.spotify.com/openplay/?uri=spotify:track:5Zp4SWOpbuOdnsxLqwgutt");
-            raw = raw.Replace(" ", "");
-            string[] lines = raw.Split(new string[] { "\n" }, StringSplitOptions.None);
-            foreach (string line in lines)
+            try
             {
-                if (line.StartsWith("tokenData"))
-                {
-                    string[] l = line.Split(new string[] { "'" }, StringSplitOptions.None);
-                    return l[1];
-                }
+                WebClient xraw = new WebClient();
+                xraw.Proxy = null;
+                xraw.Headers.Add("User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36");
+                string raw = xraw.DownloadString("http://open.spotify.com/token");
+                Token data = JsonConvert.DeserializeObject<Token>(raw);
+                if(data != null)
+                    return data.t;
+                Console.WriteLine("Could not find OAuth token...");
+                return null;
             }
-
-            throw new Exception("Could not find OAuth token");
+            catch(Exception ex)
+            {
+                //failed.
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
         }
 
-
+        internal class Token
+        {
+            public string t;
+        }
 
         private string recv(string request)
         {
@@ -226,6 +248,7 @@ namespace Thr
 
         private string recv(string request, bool oauth, bool cfid, int wait)
         {
+            wc.Proxy = null;
             string parameters = "?&ref=&cors=&_=" + TimeStamp;
             if (request.Contains("?"))
             {
@@ -265,7 +288,7 @@ namespace Thr
                     }
                     catch (Exception dd)
                     {
-                        throw new Exception("Could not launch SpotifyWebHelper. Your installation of Spotify might be corrupt or you might not have Spotify installed", dd);
+                        Console.WriteLine("Could not launch SpotifyWebHelper.");
                     }
 
                     return recv(request, oauth, cfid);
@@ -286,6 +309,7 @@ namespace Thr
             {
                 string a = recv("service/version.json?service=remote");
                 List<Responses.ClientVersion> d = (List<Responses.ClientVersion>)JsonConvert.DeserializeObject(a, typeof(List<Responses.ClientVersion>));
+                Console.WriteLine("Got ClientVersion: " + d[0]);
                 return d[0];
             }
         }

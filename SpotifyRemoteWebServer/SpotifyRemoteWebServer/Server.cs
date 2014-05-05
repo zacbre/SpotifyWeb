@@ -160,11 +160,6 @@ namespace SpotifyRemoteWebServer
                         controller.VolumeDown();
                         Send(client.ReadOnlySocket, "VolDown.");
                         break;
-                    case "/status":
-                        Responses.Status status = spot.Status;
-                        //Build our string.
-                        Send(client.ReadOnlySocket, buildreq(status));
-                        break;
                     case "/live":
                         Send(client.ReadOnlySocket, "HTTP/1.1 200 OK\r\nServer: SpotifyWebServer\r\nTransfer-Encoding : chunked\r\nContent-Type : audio/wav\r\nConnection: close\r\n\r\n", false);
                         //Live Streaming not implemented yet. In progress.
@@ -173,6 +168,14 @@ namespace SpotifyRemoteWebServer
                         Send(client.ReadOnlySocket, File.ReadAllText("page.html"));
                         break;
                     default:
+                        //check for question mark.
+                        if(get[1].Contains("?"))
+                        {
+                            status = spot.Status;
+                            //Build our string.
+                            Send(client.ReadOnlySocket, buildreq(status, get[1].Split('?')[1]));
+                            return;
+                        }
                         //Send(client.ReadOnlySocket, "Invalid Request.");
                         //Try to load the file.
                         try
@@ -230,9 +233,22 @@ namespace SpotifyRemoteWebServer
         {
             return Encoding.ASCII.GetBytes(str);
         }
-        private static string buildreq(Responses.Status stat)
+        public static string artURL = "";
+        public static Responses.Status status;
+        private static string buildreq(Responses.Status stat, string req)
         {
             StringBuilder f = new StringBuilder();
+            if (stat.track.track_resource.uri == req)
+            {
+                f.AppendLine("not_changed");
+                f.AppendLine((stat.playing ? 1 : 0).ToString());
+                f.AppendLine((stat.repeat ? 1 : 0).ToString());
+                f.AppendLine((stat.shuffle ? 1 : 0).ToString());
+                f.AppendLine((stat.volume.ToString()));
+                f.AppendLine(new DateTime().AddSeconds(stat.playing_position).ToString("HH:mm:ss"));
+                f.AppendLine(stat.track.track_resource.uri);
+                return f.ToString();
+            }
             f.AppendLine((stat.playing ? 1 : 0).ToString());
             f.AppendLine((stat.repeat ? 1 : 0).ToString());
             f.AppendLine((stat.shuffle ? 1 : 0).ToString());
@@ -241,7 +257,8 @@ namespace SpotifyRemoteWebServer
             f.AppendLine(stat.track.track_resource.name);
             f.AppendLine(stat.track.album_resource.name);
             f.AppendLine(stat.track.artist_resource.name);
-            f.AppendLine(spot.getArt(stat.track.album_resource.uri));
+            f.AppendLine(SpotifyAPI.GetArt(stat.track.album_resource.uri));
+            f.AppendLine(stat.track.track_resource.uri);
             return f.ToString();
         }
     }

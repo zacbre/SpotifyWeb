@@ -48,21 +48,36 @@ $.get(scriptURL, function(data)
 	return data;
 });
 }
+var old_data = "startup";
 $(document).ready(function()
 {
 window.setInterval(function() {
-$.get("/status", function(data)
+$.get("/status?"+old_data, function(data)
 {
 var str = data.split("\n");
-$("#spotimg").attr("src", str[8]);
-$("#songtitle").html(str[5]);
-var st = str[0];
-if(st.indexOf("1") !== -1)
+if(str[0] == "not_changed\r")
 {
-$("#songtime").html(str[4]);
+	//not changed.
+	var st = str[1];
+	if(st.indexOf("1") !== -1)
+	{
+		$("#songtime").html(str[5]);
+	}
+	else { $("#songtime").html("Paused."); }
 }
-else { $("#songtime").html("Paused."); }
-})},1000);
+else if(old_data == "startup" || str[0] != "not_changed") 
+{
+	old_data = str[9];
+	$("#spotimg").attr("src", str[8]);
+	$("#songtitle").html(str[7] + " - " +str[5]);
+	var st = str[0];
+	if(st.indexOf("1") !== -1)
+	{
+		$("#songtime").html(str[4]);
+	}
+	else { $("#songtime").html("Paused."); }
+}
+})},500);
 });
 </script>
 </head>

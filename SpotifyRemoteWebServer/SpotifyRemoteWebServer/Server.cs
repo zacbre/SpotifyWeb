@@ -185,7 +185,7 @@ namespace SpotifyRemoteWebServer
                         }
                         catch(FileNotFoundException ex)
                         {
-                            Send(client.ReadOnlySocket, "File not found.");
+                            Send(client.ReadOnlySocket, "HTTP/1.1 404 NOT FOUND\r\n\r\n");
                         }
                         break;
                 }

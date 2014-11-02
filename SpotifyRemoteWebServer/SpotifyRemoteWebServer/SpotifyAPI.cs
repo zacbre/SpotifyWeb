@@ -45,15 +45,15 @@ namespace Thr
                 string[] lines = raw.Split(new string[] { "\n" }, StringSplitOptions.None);
                 foreach (string line in lines)
                 {
-                    if (line.Contains("big-cover"))
+                    if (line.Contains("mo-image"))
                     {
                         //int content = line.IndexOf("content=\"");
                         //string url = line.Substring(content + 9);
                         //return url.Split('\"')[0];
                         string vvs = line.Replace('\t', ' ');
                         vvs = vvs.Replace(" ", "");
-                        int indx = vvs.IndexOf("src=\"") + "src=\"".Length;
-                        int indexx = vvs.IndexOf("\"border=\"0\"", indx);
+                        int indx = vvs.IndexOf("url(//i.scdn.co/image") + "url(//i.scdn.co/image".Length;
+                        int indexx = vvs.IndexOf(")\">", indx);
                         string vm = vvs.Substring(indx, indexx - indx);
                         Console.WriteLine("Got art: " + vm);
                         return vm.Replace("/300/", "/640/");
@@ -276,6 +276,9 @@ namespace Thr
             {
                 derp = wc.DownloadString(a);
                 derp = "[ " + derp + " ]";
+            }
+            catch (NotSupportedException)
+            { 
             }
             catch (Exception z)
             {

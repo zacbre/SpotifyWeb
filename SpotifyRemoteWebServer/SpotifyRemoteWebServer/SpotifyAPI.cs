@@ -38,6 +38,7 @@ namespace Thr
         {
             try
             {
+                bool grabbed = false;
                 WebClient xraw = new WebClient();
                 xraw.Proxy = null;
                 string raw = xraw.DownloadString("http://open.spotify.com/album/" + uri.Split(new string[] { ":" }, StringSplitOptions.None)[2]);
@@ -45,8 +46,26 @@ namespace Thr
                 string[] lines = raw.Split(new string[] { "\n" }, StringSplitOptions.None);
                 foreach (string line in lines)
                 {
-                    if (line.Contains("mo-image"))
+                    if (line.Contains("VariousArtists"))
                     {
+                        grabbed = true;
+                    }
+                    if (line.Contains("big-cover"))
+                    {
+                        //int content = line.IndexOf("content=\"");
+                        //string url = line.Substring(content + 9);
+                        //return url.Split('\"')[0];
+                        string vvs = line.Replace('\t', ' ');
+                        vvs = vvs.Replace(" ", "");
+                        int indx = vvs.IndexOf("src=\"") + "src=\"".Length;
+                        int indexx = vvs.IndexOf("\"border=\"0\"", indx);
+                        string vm = vvs.Substring(indx, indexx - indx);
+                        Console.WriteLine("Got art: " + vm);
+                        return vm.Replace("/300/", "/640/");
+                    }
+                    else if (line.Contains("mo-image") && !line.Contains("mo-image-background") && line.Contains("url(//i.scdn.co/image"))
+                    {
+                        if (!grabbed) { grabbed = true; continue; }
                         //int content = line.IndexOf("content=\"");
                         //string url = line.Substring(content + 9);
                         //return url.Split('\"')[0];
@@ -56,7 +75,7 @@ namespace Thr
                         int indexx = vvs.IndexOf(")\">", indx);
                         string vm = vvs.Substring(indx, indexx - indx);
                         Console.WriteLine("Got art: " + vm);
-                        return vm.Replace("/300/", "/640/");
+                        return vm.Replace("/", "http://i.scdn.co/image/");
                     }
                 }
             }
